@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2048 Game</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="light">
+
+    <!-- Menu Game -->
+    <div id="game-menu" class="menu-overlay">
+        <div class="menu-content">
+            <h2>🎮 Chào mừng đến 2048!</h2>
+            
+            <div class="menu-section">
+                <h3>Chọn kích thước lưới</h3>
+                <div class="grid-size-options">
+                    <button class="grid-size-btn" data-size="3">3×3</button>
+                    <button class="grid-size-btn active" data-size="4">4×4</button>
+                    <button class="grid-size-btn" data-size="5">5×5</button>
+                    <button class="grid-size-btn" data-size="6">6×6</button>
+                </div>
+            </div>
+
+            <div class="menu-section">
+                <h3>Chế độ chơi</h3>
+                <div class="game-modes">
+                    <button class="mode-btn active" data-mode="classic">
+                        <span class="mode-icon">🎯</span>
+                        <span class="mode-name">Classic</span>
+                    </button>
+                    <button class="mode-btn" data-mode="time">
+                        <span class="mode-icon">⏱️</span>
+                        <span class="mode-name">Time Attack</span>
+                    </button>
+                    <button class="mode-btn" data-mode="target">
+                        <span class="mode-icon">🎖️</span>
+                        <span class="mode-name">Target Score</span>
+                    </button>
+                </div>
+            </div>
+
+            <div class="menu-section">
+                <h3>Theme</h3>
+                <div class="theme-options">
+                    <button class="theme-btn active" data-theme="light">☀️ Light</button>
+                    <button class="theme-btn" data-theme="dark">🌙 Dark</button>
+                    <button class="theme-btn" data-theme="neon">✨ Neon</button>
+                    <button class="theme-btn" data-theme="pastel">🎨 Pastel</button>
+                </div>
+            </div>
+            
+            <div class="menu-section">
+                <h3>📖 Hướng dẫn chơi</h3>
+                <div class="game-intro">
+                    <p><strong>Cách chơi:</strong></p>
+                    <ul>
+                        <li>Sử dụng phím mũi tên ⬆️ ⬇️ ⬅️ ➡️ để di chuyển</li>
+                        <li>Hai ô cùng số sẽ gộp lại khi chạm nhau</li>
+                        <li>Mục tiêu: Tạo ra ô 2048! 🎯</li>
+                        <li>Nhấn U để hoàn tác, H để gợi ý</li>
+                    </ul>
+                    <p><strong>💡 Mẹo:</strong> Giữ ô lớn nhất ở một góc!</p>
+                </div>
+            </div>
+
+            <div class="menu-section">
+                <h3>📊 Thống kê</h3>
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <div class="stat-label">Tổng ván chơi</div>
+                        <div class="stat-value" id="total-games">0</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-label">Tỷ lệ thắng</div>
+                        <div class="stat-value" id="win-rate">0%</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-label">Tile cao nhất</div>
+                        <div class="stat-value" id="highest-tile">0</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-label">Thời gian chơi</div>
+                        <div class="stat-value" id="total-time">0h 0m</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="menu-section">
+                <h3>🏆 Bảng xếp hạng</h3>
+                <div id="leaderboard" class="leaderboard"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Win Message -->
+    <div id="win-message" class="overlay hidden">
+        <div class="message-box">
+            <h2>🎉 Chúc mừng!</h2>
+            <p>Bạn đã đạt được <span id="win-tile">2048</span>!</p>
+            <div class="message-buttons">
+                <button id="continue-game" class="msg-btn primary">Tiếp tục chơi</button>
+                <button id="new-game-win" class="msg-btn">Game mới</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <h1>2048</h1>
+
+        <div class="top-bar">
+            <div class="score-board">
+                <div class="score-box">
+                    <span>Score</span>
+                    <div id="score">0</div>
+                </div>
+                <div class="score-box">
+                    <span>Best</span>
+                    <div id="best">0</div>
+                </div>
+                <div class="score-box" id="time-box" style="display: none;">
+                    <span>Time</span>
+                    <div id="timer">0:00</div>
+                </div>
+                <div class="score-box" id="moves-box">
+                    <span>Moves</span>
+                    <div id="moves">0</div>
+                </div>
+            </div>
+
+            <div class="buttons">
+                <button id="menu-toggle" title="Menu">📋</button>
+                <button id="undo-btn" title="Hoàn tác (U)">↶</button>
+                <button id="hint-btn" title="Gợi ý (H)">💡</button>
+                <button id="sound-toggle" title="Âm thanh">🔊</button>
+                <button id="theme-toggle">🌙</button>
+                <button id="new-game">New Game</button>
+            </div>
+        </div>
+
+        <div id="board"></div>
+
+        <div id="message" class="hidden">
+            <div id="message-text"></div>
+            <button id="restart">Chơi lại</button>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
