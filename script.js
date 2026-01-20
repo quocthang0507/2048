@@ -11,6 +11,10 @@ let soundEnabled = true;
 let startTime = null;
 let timerInterval = null;
 let hasWon = false;
+let tileIdCounter = 0;
+let tiles = {};
+let currentCellSize = 95;
+let currentGap = 10;
 
 // Board sizing constants
 const VIEWPORT_PADDING = 40; // Account for container padding and margins (synced with CSS --viewport-padding)
@@ -304,6 +308,7 @@ function showHint() {
 /* ====== UPDATE BOARD SIZE ====== */
 function updateBoardSize() {
     const boardDiv = document.getElementById('board');
+    const boardGrid = boardDiv.querySelector('.board-grid');
     
     // Calculate optimal cell size based on screen width
     const maxWidth = window.innerWidth - VIEWPORT_PADDING;
@@ -313,60 +318,203 @@ function updateBoardSize() {
     // Determine gap size based on available width
     // Use smaller gap for narrower screens to fit more content
     const estimatedCellSize = Math.floor((maxWidth - (2 * padding)) / gridSize);
-    const gap = estimatedCellSize < SMALL_CELL_THRESHOLD ? SMALL_GAP : DEFAULT_GAP;
+    currentGap = estimatedCellSize < SMALL_CELL_THRESHOLD ? SMALL_GAP : DEFAULT_GAP;
     
     // Calculate cell size to fit the screen with the appropriate gap
-    const availableWidth = maxWidth - (2 * padding) - ((gridSize - 1) * gap);
-    let cellSize = Math.floor(availableWidth / gridSize);
+    const availableWidth = maxWidth - (2 * padding) - ((gridSize - 1) * currentGap);
+    currentCellSize = Math.floor(availableWidth / gridSize);
     
     // Cap at maximum size for larger screens
-    cellSize = Math.min(cellSize, maxCellSize);
+    currentCellSize = Math.min(currentCellSize, maxCellSize);
     
     // Ensure minimum size for playability
-    cellSize = Math.max(cellSize, MIN_CELL_SIZE);
+    currentCellSize = Math.max(currentCellSize, MIN_CELL_SIZE);
     
-    boardDiv.style.gridTemplateColumns = `repeat(${gridSize}, ${cellSize}px)`;
-    boardDiv.style.gridTemplateRows = `repeat(${gridSize}, ${cellSize}px)`;
-    boardDiv.style.gap = `${gap}px`;
-    boardDiv.style.padding = `${gap}px`;
+    if (boardGrid) {
+        boardGrid.style.gridTemplateColumns = `repeat(${gridSize}, ${currentCellSize}px)`;
+        boardGrid.style.gridTemplateRows = `repeat(${gridSize}, ${currentCellSize}px)`;
+        boardGrid.style.gap = `${currentGap}px`;
+    }
+    boardDiv.style.padding = `${currentGap}px`;
     boardDiv.style.width = 'fit-content';
     
     // Update tile font sizes based on cell size
-    const baseFontSize = Math.floor(cellSize * FONT_SIZE_RATIO);
+    const baseFontSize = Math.floor(currentCellSize * FONT_SIZE_RATIO);
     document.documentElement.style.setProperty('--tile-font-size', `${baseFontSize}px`);
     document.documentElement.style.setProperty('--tile-font-size-large', `${Math.floor(baseFontSize * LARGE_FONT_RATIO)}px`);
     document.documentElement.style.setProperty('--tile-font-size-xlarge', `${Math.floor(baseFontSize * XLARGE_FONT_RATIO)}px`);
+    
+    // Update existing tile positions
+    updateTilePositions();
 }
 
 /* ====== RENDER BOARD ====== */
-function updateBoard() {
-    let boardDiv = document.getElementById("board");
-    boardDiv.innerHTML = "";
+function getTilePosition(row, col) {
+    return {
+        left: col * (currentCellSize + currentGap),
+        top: row * (currentCellSize + currentGap)
+    };
+}
 
+function updateTilePositions() {
+    Object.keys(tiles).forEach(id => {
+        const tile = tiles[id];
+        if (tile.element) {
+            const pos = getTilePosition(tile.row, tile.col);
+            tile.element.style.left = `${pos.left}px`;
+            tile.element.style.top = `${pos.top}px`;
+            tile.element.style.width = `${currentCellSize}px`;
+            tile.element.style.height = `${currentCellSize}px`;
+        }
+    });
+}
+
+function initBoard() {
+    const boardDiv = document.getElementById("board");
+    boardDiv.innerHTML = "";
+    tiles = {};
+    tileIdCounter = 0;
+    
+    // Create background grid
+    const boardGrid = document.createElement("div");
+    boardGrid.className = "board-grid";
+    boardGrid.style.gridTemplateColumns = `repeat(${gridSize}, ${currentCellSize}px)`;
+    boardGrid.style.gridTemplateRows = `repeat(${gridSize}, ${currentCellSize}px)`;
+    boardGrid.style.gap = `${currentGap}px`;
+    
     for (let r = 0; r < gridSize; r++) {
         for (let c = 0; c < gridSize; c++) {
-            let tile = document.createElement("div");
-            tile.classList.add("tile");
+            const cell = document.createElement("div");
+            cell.className = "cell-bg";
+            boardGrid.appendChild(cell);
+        }
+    }
+    boardDiv.appendChild(boardGrid);
+    
+    // Create tile container
+    const tileContainer = document.createElement("div");
+    tileContainer.className = "tile-container";
+    tileContainer.id = "tile-container";
+    boardDiv.appendChild(tileContainer);
+}
 
-            let value = board[r][c];
-            if (value > 0) {
-                tile.innerText = value;
-                tile.classList.add("tile-" + value);
-                
-                // Track highest tile
-                if (value > stats.highestTile) {
-                    stats.highestTile = value;
-                    saveStats();
-                }
-                
-                // Check for win
-                if (value === 2048 && !hasWon) {
-                    setTimeout(() => showWinMessage(value), 500);
-                    hasWon = true;
+function updateBoard() {
+    const tileContainer = document.getElementById("tile-container");
+    if (!tileContainer) {
+        initBoard();
+        return updateBoard();
+    }
+    
+    // Build a map of current board state by position
+    const newBoardState = {};
+    for (let r = 0; r < gridSize; r++) {
+        for (let c = 0; c < gridSize; c++) {
+            if (board[r][c] > 0) {
+                newBoardState[`${r}-${c}`] = board[r][c];
+            }
+        }
+    }
+    
+    // Update existing tiles or mark them for removal
+    const tilesToRemove = [];
+    Object.keys(tiles).forEach(id => {
+        const tile = tiles[id];
+        const currentKey = `${tile.row}-${tile.col}`;
+        
+        // Check if tile still exists at current position with same value
+        if (newBoardState[currentKey] === tile.value) {
+            // Tile hasn't moved, keep it
+            delete newBoardState[currentKey];
+        } else {
+            // Try to find if this tile moved to a new position
+            let found = false;
+            for (let key in newBoardState) {
+                if (newBoardState[key] === tile.value) {
+                    const [newR, newC] = key.split('-').map(Number);
+                    
+                    // Check if no other tile is already claiming this position
+                    let claimed = false;
+                    for (let otherId in tiles) {
+                        if (otherId !== id && tiles[otherId].row === newR && tiles[otherId].col === newC) {
+                            claimed = true;
+                            break;
+                        }
+                    }
+                    
+                    if (!claimed) {
+                        // This tile moved to this new position
+                        tile.row = newR;
+                        tile.col = newC;
+                        const pos = getTilePosition(newR, newC);
+                        tile.element.style.left = `${pos.left}px`;
+                        tile.element.style.top = `${pos.top}px`;
+                        tile.element.className = `tile tile-${tile.value}`;
+                        tile.element.innerText = tile.value;
+                        delete newBoardState[key];
+                        found = true;
+                        break;
+                    }
                 }
             }
-
-            boardDiv.appendChild(tile);
+            
+            if (!found) {
+                // Tile was merged or removed
+                tilesToRemove.push(id);
+            }
+        }
+    });
+    
+    // Remove tiles that were merged
+    tilesToRemove.forEach(id => {
+        if (tiles[id].element) {
+            tiles[id].element.remove();
+        }
+        delete tiles[id];
+    });
+    
+    // Create new tiles that appeared
+    for (let key in newBoardState) {
+        const [r, c] = key.split('-').map(Number);
+        const value = newBoardState[key];
+        
+        const tileId = `tile-${tileIdCounter++}`;
+        const tileElement = document.createElement("div");
+        tileElement.className = `tile tile-${value}`;
+        tileElement.id = tileId;
+        tileElement.innerText = value;
+        
+        const pos = getTilePosition(r, c);
+        tileElement.style.left = `${pos.left}px`;
+        tileElement.style.top = `${pos.top}px`;
+        tileElement.style.width = `${currentCellSize}px`;
+        tileElement.style.height = `${currentCellSize}px`;
+        
+        tiles[tileId] = {
+            element: tileElement,
+            row: r,
+            col: c,
+            value: value
+        };
+        
+        tileContainer.appendChild(tileElement);
+        
+        // Add new animation using requestAnimationFrame for better timing
+        requestAnimationFrame(() => {
+            requestAnimationFrame(() => {
+                tileElement.classList.add("new");
+            });
+        });
+        
+        // Track highest tile
+        if (value > stats.highestTile) {
+            stats.highestTile = value;
+            saveStats();
+        }
+        
+        // Check for win
+        if (value === 2048 && !hasWon) {
+            setTimeout(() => showWinMessage(value), 500);
+            hasWon = true;
         }
     }
 

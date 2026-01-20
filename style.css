@@ -47,7 +47,7 @@ body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     display: flex;
     justify-content: center;
-    padding-top: 40px;
+    align-items: center;
     background: var(--bg-color);
     color: var(--text-color);
     transition: background var(--transition-speed) ease, color var(--transition-speed) ease;
@@ -66,13 +66,16 @@ body {
 }
 
 h1 {
-    font-size: 70px;
-    margin-bottom: 10px;
-    font-weight: bold;
-    background: linear-gradient(135deg, #edc22e, #f67c5f);
+    font-size: 120px;
+    margin-bottom: 20px;
+    font-weight: 900;
+    background: linear-gradient(135deg, #edc22e, #f67c5f, #ed4264);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
+    text-shadow: 0 4px 20px rgba(237, 194, 46, 0.3);
+    letter-spacing: -2px;
+    line-height: 1;
 }
 
 .top-bar {
@@ -113,7 +116,7 @@ h1 {
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
-    gap: 8px;
+    gap: 12px;
 }
 
 .buttons button {
@@ -149,12 +152,8 @@ h1 {
     background: var(--board-bg);
     border-radius: 10px;
     padding: 10px;
-    display: grid;
-    gap: 10px;
-    margin: 0 auto;
+    margin: 20px auto 0;
     box-sizing: border-box;
-    grid-template-columns: repeat(4, 95px);
-    grid-template-rows: repeat(4, 95px);
     width: fit-content;
     position: relative;
     box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
@@ -163,7 +162,28 @@ h1 {
     user-select: none;
 }
 
+.board-grid {
+    display: grid;
+    gap: 10px;
+    grid-template-columns: repeat(4, 95px);
+    grid-template-rows: repeat(4, 95px);
+}
+
+.cell-bg {
+    background: var(--cell-bg);
+    border-radius: 8px;
+}
+
 /* ====== TILE ====== */
+.tile-container {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    right: 10px;
+    bottom: 10px;
+    pointer-events: none;
+}
+
 .tile {
     background: var(--cell-bg);
     border-radius: 8px;
@@ -173,9 +193,10 @@ h1 {
     font-size: var(--tile-font-size);
     font-weight: bold;
     color: #776e65;
-    transition: all 0.15s ease-in-out;
     box-sizing: border-box;
-    position: relative;
+    position: absolute;
+    transition: transform 0.15s ease, left 0.15s ease, top 0.15s ease;
+    will-change: transform, left, top;
 }
 
 .tile.new {
@@ -569,12 +590,8 @@ body.neon .tile-64 { background: #ff0000; color: white; box-shadow: 0 0 20px #ff
 
 /* Responsive */
 @media (max-width: 600px) {
-    body {
-        padding-top: 20px;
-    }
-    
     h1 {
-        font-size: 50px;
+        font-size: 80px;
         margin: 10px 0;
     }
     
@@ -608,7 +625,7 @@ body.neon .tile-64 { background: #ff0000; color: white; box-shadow: 0 0 20px #ff
 
 /* Mobile tweaks */
 @media (max-width: 640px) {
-    h1 { margin: 10px 0; font-size: 40px; }
+    h1 { margin: 10px 0; font-size: 60px; }
 
     .container { 
         padding: 8px;
