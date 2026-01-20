@@ -466,8 +466,8 @@ function updateBoard() {
     
     // Remove tiles that were merged
     tilesToRemove.forEach(id => {
-        if (tiles[id].element && tiles[id].element.parentNode) {
-            tiles[id].element.parentNode.removeChild(tiles[id].element);
+        if (tiles[id].element) {
+            tiles[id].element.remove();
         }
         delete tiles[id];
     });
@@ -498,10 +498,12 @@ function updateBoard() {
         
         tileContainer.appendChild(tileElement);
         
-        // Add new animation after a tiny delay to trigger CSS transition
-        setTimeout(() => {
-            tileElement.classList.add("new");
-        }, 10);
+        // Add new animation using requestAnimationFrame for better timing
+        requestAnimationFrame(() => {
+            requestAnimationFrame(() => {
+                tileElement.classList.add("new");
+            });
+        });
         
         // Track highest tile
         if (value > stats.highestTile) {

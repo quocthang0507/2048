@@ -66,13 +66,16 @@ body {
 }
 
 h1 {
-    font-size: 70px;
-    margin-bottom: 10px;
-    font-weight: bold;
-    background: linear-gradient(135deg, #edc22e, #f67c5f);
+    font-size: 120px;
+    margin-bottom: 20px;
+    font-weight: 900;
+    background: linear-gradient(135deg, #edc22e, #f67c5f, #ed4264);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
+    text-shadow: 0 4px 20px rgba(237, 194, 46, 0.3);
+    letter-spacing: -2px;
+    line-height: 1;
 }
 
 .top-bar {
@@ -587,12 +590,8 @@ body.neon .tile-64 { background: #ff0000; color: white; box-shadow: 0 0 20px #ff
 
 /* Responsive */
 @media (max-width: 600px) {
-    body {
-        padding-top: 20px;
-    }
-    
     h1 {
-        font-size: 50px;
+        font-size: 80px;
         margin: 10px 0;
     }
     
@@ -626,7 +625,7 @@ body.neon .tile-64 { background: #ff0000; color: white; box-shadow: 0 0 20px #ff
 
 /* Mobile tweaks */
 @media (max-width: 640px) {
-    h1 { margin: 10px 0; font-size: 40px; }
+    h1 { margin: 10px 0; font-size: 60px; }
 
     .container { 
         padding: 8px;
