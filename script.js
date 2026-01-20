@@ -13,12 +13,12 @@ let timerInterval = null;
 let hasWon = false;
 
 // Board sizing constants
-const VIEWPORT_PADDING = 40; // Account for container padding and margins
-const MIN_CELL_SIZE = 50; // Minimum cell size for playability
-const SMALL_CELL_THRESHOLD = 70; // Threshold for using smaller gap
-const FONT_SIZE_RATIO = 0.35; // Base font size as ratio of cell size
-const LARGE_FONT_RATIO = 0.85; // Font size ratio for tiles 128-512
-const XLARGE_FONT_RATIO = 0.75; // Font size ratio for tiles 1024+
+const VIEWPORT_PADDING = 40; // Account for container padding and margins (matches CSS container padding)
+const MIN_CELL_SIZE = 50; // Minimum cell size for playability on small screens
+const SMALL_CELL_THRESHOLD = 70; // Cell size threshold for using smaller gap (smaller screens need tighter layout)
+const FONT_SIZE_RATIO = 0.35; // Base font size as 35% of cell size for optimal readability
+const LARGE_FONT_RATIO = 0.85; // Font size for tiles 128-512 (reduced to fit 3 digits)
+const XLARGE_FONT_RATIO = 0.75; // Font size for tiles 1024+ (reduced to fit 4 digits)
 
 // Statistics
 let stats = JSON.parse(localStorage.getItem("stats2048")) || {
@@ -306,10 +306,16 @@ function updateBoardSize() {
     // Calculate optimal cell size based on screen width
     const maxWidth = window.innerWidth - VIEWPORT_PADDING;
     const maxCellSize = 95;
-    const gap = 10;
+    const defaultGap = 10;
+    const smallGap = 8;
     const padding = 10;
     
-    // Calculate cell size to fit the screen
+    // Determine gap size based on available width
+    // Use smaller gap for narrower screens to fit more content
+    const estimatedCellSize = Math.floor((maxWidth - (2 * padding)) / gridSize);
+    const gap = estimatedCellSize < SMALL_CELL_THRESHOLD ? smallGap : defaultGap;
+    
+    // Calculate cell size to fit the screen with the appropriate gap
     const availableWidth = maxWidth - (2 * padding) - ((gridSize - 1) * gap);
     let cellSize = Math.floor(availableWidth / gridSize);
     
@@ -319,13 +325,10 @@ function updateBoardSize() {
     // Ensure minimum size for playability
     cellSize = Math.max(cellSize, MIN_CELL_SIZE);
     
-    // Adjust gap for smaller screens
-    const responsiveGap = cellSize < SMALL_CELL_THRESHOLD ? 8 : gap;
-    
     boardDiv.style.gridTemplateColumns = `repeat(${gridSize}, ${cellSize}px)`;
     boardDiv.style.gridTemplateRows = `repeat(${gridSize}, ${cellSize}px)`;
-    boardDiv.style.gap = `${responsiveGap}px`;
-    boardDiv.style.padding = `${responsiveGap}px`;
+    boardDiv.style.gap = `${gap}px`;
+    boardDiv.style.padding = `${gap}px`;
     boardDiv.style.width = 'fit-content';
     
     // Update tile font sizes based on cell size

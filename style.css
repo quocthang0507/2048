@@ -4,6 +4,7 @@
     --tile-font-size: 32px;
     --tile-font-size-large: 28px;
     --tile-font-size-xlarge: 24px;
+    --viewport-padding: 40px;
 }
 
 body.light {
@@ -588,7 +589,7 @@ body.neon .tile-64 { background: #ff0000; color: white; box-shadow: 0 0 20px #ff
     
     #board {
         transform: scale(1);
-        max-width: calc(100vw - 40px);
+        max-width: calc(100vw - var(--viewport-padding));
     }
     
     .grid-size-options {
@@ -601,7 +602,7 @@ body.neon .tile-64 { background: #ff0000; color: white; box-shadow: 0 0 20px #ff
     
     .menu-content {
         padding: 25px;
-        max-width: calc(100vw - 40px);
+        max-width: calc(100vw - var(--viewport-padding));
     }
 }
 
