@@ -31,6 +31,13 @@ window.onload = function () {
     showMenu();
 };
 
+// Update board size on window resize
+window.addEventListener('resize', () => {
+    if (gameStarted) {
+        updateBoardSize();
+    }
+});
+
 document.getElementById("new-game").onclick = startGame;
 document.getElementById("restart").onclick = startGame;
 document.getElementById("continue-game").onclick = () => {
@@ -287,14 +294,37 @@ function showHint() {
 /* ====== UPDATE BOARD SIZE ====== */
 function updateBoardSize() {
     const boardDiv = document.getElementById('board');
-    const cellSize = Math.min(95, Math.floor(400 / gridSize));
+    
+    // Calculate optimal cell size based on screen width
+    const maxWidth = window.innerWidth - 40; // Account for padding
+    const maxCellSize = 95;
     const gap = 10;
+    const padding = 10;
+    
+    // Calculate cell size to fit the screen
+    const availableWidth = maxWidth - (2 * padding) - ((gridSize - 1) * gap);
+    let cellSize = Math.floor(availableWidth / gridSize);
+    
+    // Cap at maximum size for larger screens
+    cellSize = Math.min(cellSize, maxCellSize);
+    
+    // Ensure minimum size for playability
+    cellSize = Math.max(cellSize, 50);
+    
+    // Adjust gap for smaller screens
+    const responsiveGap = cellSize < 70 ? 8 : gap;
     
     boardDiv.style.gridTemplateColumns = `repeat(${gridSize}, ${cellSize}px)`;
     boardDiv.style.gridTemplateRows = `repeat(${gridSize}, ${cellSize}px)`;
-    boardDiv.style.gap = `${gap}px`;
-    boardDiv.style.padding = `${gap}px`;
+    boardDiv.style.gap = `${responsiveGap}px`;
+    boardDiv.style.padding = `${responsiveGap}px`;
     boardDiv.style.width = 'fit-content';
+    
+    // Update tile font sizes based on cell size
+    const baseFontSize = Math.floor(cellSize * 0.35);
+    document.documentElement.style.setProperty('--tile-font-size', `${baseFontSize}px`);
+    document.documentElement.style.setProperty('--tile-font-size-large', `${Math.floor(baseFontSize * 0.85)}px`);
+    document.documentElement.style.setProperty('--tile-font-size-xlarge', `${Math.floor(baseFontSize * 0.75)}px`);
 }
 
 /* ====== RENDER BOARD ====== */
@@ -405,14 +435,30 @@ document.addEventListener("keydown", function (e) {
 /* ====== TOUCH SUPPORT ====== */
 let touchStartX = 0;
 let touchStartY = 0;
+let isSwiping = false;
 
 document.addEventListener('touchstart', (e) => {
-    touchStartX = e.touches[0].clientX;
-    touchStartY = e.touches[0].clientY;
-});
+    const target = e.target;
+    // Only handle touch on the board
+    if (target.closest('#board') || target.classList.contains('tile')) {
+        touchStartX = e.touches[0].clientX;
+        touchStartY = e.touches[0].clientY;
+        isSwiping = true;
+        e.preventDefault();
+    }
+}, { passive: false });
+
+document.addEventListener('touchmove', (e) => {
+    if (isSwiping) {
+        e.preventDefault();
+    }
+}, { passive: false });
 
 document.addEventListener('touchend', (e) => {
-    if (!gameStarted) return;
+    if (!gameStarted || !isSwiping) {
+        isSwiping = false;
+        return;
+    }
     
     const touchEndX = e.changedTouches[0].clientX;
     const touchEndY = e.changedTouches[0].clientY;
@@ -420,16 +466,18 @@ document.addEventListener('touchend', (e) => {
     const deltaX = touchEndX - touchStartX;
     const deltaY = touchEndY - touchStartY;
     
-    const minSwipe = 50;
+    const minSwipe = 30;
     let moved = false;
     
     if (Math.abs(deltaX) > Math.abs(deltaY)) {
         if (Math.abs(deltaX) > minSwipe) {
             moved = deltaX > 0 ? moveRight() : moveLeft();
+            e.preventDefault();
         }
     } else {
         if (Math.abs(deltaY) > minSwipe) {
             moved = deltaY > 0 ? moveDown() : moveUp();
+            e.preventDefault();
         }
     }
     
@@ -442,6 +490,8 @@ document.addEventListener('touchend', (e) => {
         saveState();
         checkGameOver();
     }
+    
+    isSwiping = false;
 });
 
 /* ====== SLIDE LOGIC ====== */

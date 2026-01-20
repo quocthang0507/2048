@@ -1,6 +1,9 @@
 /* ====== THEME ====== */
 :root {
     --transition-speed: 0.3s;
+    --tile-font-size: 32px;
+    --tile-font-size-large: 28px;
+    --tile-font-size-xlarge: 24px;
 }
 
 body.light {
@@ -48,6 +51,9 @@ body {
     color: var(--text-color);
     transition: background var(--transition-speed) ease, color var(--transition-speed) ease;
     min-height: 100vh;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+    overflow-x: hidden;
 }
 
 /* ====== LAYOUT ====== */
@@ -151,6 +157,9 @@ h1 {
     width: fit-content;
     position: relative;
     box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
+    touch-action: none;
+    -webkit-user-select: none;
+    user-select: none;
 }
 
 /* ====== TILE ====== */
@@ -160,7 +169,7 @@ h1 {
     display: flex;
     justify-content: center;
     align-items: center;
-    font-size: 32px;
+    font-size: var(--tile-font-size);
     font-weight: bold;
     color: #776e65;
     transition: all 0.15s ease-in-out;
@@ -205,12 +214,12 @@ h1 {
 .tile-16 { background: #f59563; color: white; }
 .tile-32 { background: #f67c5f; color: white; }
 .tile-64 { background: #f65e3b; color: white; }
-.tile-128 { background: #edcf72; color: white; font-size: 28px; }
-.tile-256 { background: #edcc61; color: white; font-size: 28px; }
-.tile-512 { background: #edc850; color: white; font-size: 28px; }
-.tile-1024 { background: #edc53f; color: white; font-size: 24px; }
-.tile-2048 { background: #edc22e; color: white; font-size: 24px; }
-.tile-4096 { background: #3c3a32; color: white; font-size: 24px; }
+.tile-128 { background: #edcf72; color: white; font-size: var(--tile-font-size-large); }
+.tile-256 { background: #edcc61; color: white; font-size: var(--tile-font-size-large); }
+.tile-512 { background: #edc850; color: white; font-size: var(--tile-font-size-large); }
+.tile-1024 { background: #edc53f; color: white; font-size: var(--tile-font-size-xlarge); }
+.tile-2048 { background: #edc22e; color: white; font-size: var(--tile-font-size-xlarge); }
+.tile-4096 { background: #3c3a32; color: white; font-size: var(--tile-font-size-xlarge); }
 
 /* ====== NEON THEME TILES ====== */
 body.neon .tile-2 { background: #00ffff; color: #0a0e27; box-shadow: 0 0 10px #00ffff; }
@@ -559,8 +568,18 @@ body.neon .tile-64 { background: #ff0000; color: white; box-shadow: 0 0 20px #ff
 
 /* Responsive */
 @media (max-width: 600px) {
+    body {
+        padding-top: 20px;
+    }
+    
     h1 {
         font-size: 50px;
+        margin: 10px 0;
+    }
+    
+    .container {
+        padding: 10px;
+        max-width: 100%;
     }
     
     .top-bar {
@@ -568,7 +587,8 @@ body.neon .tile-64 { background: #ff0000; color: white; box-shadow: 0 0 20px #ff
     }
     
     #board {
-        transform: scale(0.9);
+        transform: scale(1);
+        max-width: calc(100vw - 40px);
     }
     
     .grid-size-options {
@@ -578,28 +598,43 @@ body.neon .tile-64 { background: #ff0000; color: white; box-shadow: 0 0 20px #ff
     .stats-grid {
         grid-template-columns: 1fr;
     }
+    
+    .menu-content {
+        padding: 25px;
+        max-width: calc(100vw - 40px);
+    }
 }
 
 /* Mobile tweaks */
 @media (max-width: 640px) {
-    h1 { margin: 10px 0; font-size: 28px; }
+    h1 { margin: 10px 0; font-size: 40px; }
 
-    .container { padding: 12px; }
+    .container { 
+        padding: 8px;
+        width: 100%;
+        box-sizing: border-box;
+    }
 
     .score-box {
-        min-width: 90px;
-        padding: 8px 10px;
-        font-size: 14px;
+        min-width: 70px;
+        padding: 6px 8px;
+        font-size: 12px;
+    }
+    
+    .score-box div {
+        font-size: 18px;
     }
 
     #board {
         width: 100%;
-        max-width: 480px;
-        margin: 0 auto;
+        max-width: 100%;
+        padding: 8px;
+        gap: 8px;
     }
 
     .buttons button {
-        font-size: 15px;
-        padding: 8px 9px;
+        font-size: 14px;
+        padding: 10px 12px;
+        min-width: 40px;
     }
 }
