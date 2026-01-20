@@ -295,8 +295,13 @@ function showHint() {
 function updateBoardSize() {
     const boardDiv = document.getElementById('board');
     
+    // Constants for sizing calculations
+    const VIEWPORT_PADDING = 40; // Account for container padding and margins
+    const FONT_SIZE_RATIO = 0.35; // Base font size as ratio of cell size
+    const LARGE_FONT_RATIO = 0.85; // Font size ratio for tiles 128-512
+    const XLARGE_FONT_RATIO = 0.75; // Font size ratio for tiles 1024+
+    
     // Calculate optimal cell size based on screen width
-    const VIEWPORT_PADDING = 40; // Account for container padding
     const maxWidth = window.innerWidth - VIEWPORT_PADDING;
     const maxCellSize = 95;
     const gap = 10;
@@ -322,10 +327,10 @@ function updateBoardSize() {
     boardDiv.style.width = 'fit-content';
     
     // Update tile font sizes based on cell size
-    const baseFontSize = Math.floor(cellSize * 0.35);
+    const baseFontSize = Math.floor(cellSize * FONT_SIZE_RATIO);
     document.documentElement.style.setProperty('--tile-font-size', `${baseFontSize}px`);
-    document.documentElement.style.setProperty('--tile-font-size-large', `${Math.floor(baseFontSize * 0.85)}px`);
-    document.documentElement.style.setProperty('--tile-font-size-xlarge', `${Math.floor(baseFontSize * 0.75)}px`);
+    document.documentElement.style.setProperty('--tile-font-size-large', `${Math.floor(baseFontSize * LARGE_FONT_RATIO)}px`);
+    document.documentElement.style.setProperty('--tile-font-size-xlarge', `${Math.floor(baseFontSize * XLARGE_FONT_RATIO)}px`);
 }
 
 /* ====== RENDER BOARD ====== */
