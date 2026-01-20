@@ -113,7 +113,7 @@ h1 {
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
-    gap: 8px;
+    gap: 12px;
 }
 
 .buttons button {
@@ -149,12 +149,8 @@ h1 {
     background: var(--board-bg);
     border-radius: 10px;
     padding: 10px;
-    display: grid;
-    gap: 10px;
     margin: 0 auto;
     box-sizing: border-box;
-    grid-template-columns: repeat(4, 95px);
-    grid-template-rows: repeat(4, 95px);
     width: fit-content;
     position: relative;
     box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
@@ -163,7 +159,28 @@ h1 {
     user-select: none;
 }
 
+.board-grid {
+    display: grid;
+    gap: 10px;
+    grid-template-columns: repeat(4, 95px);
+    grid-template-rows: repeat(4, 95px);
+}
+
+.cell-bg {
+    background: var(--cell-bg);
+    border-radius: 8px;
+}
+
 /* ====== TILE ====== */
+.tile-container {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    right: 10px;
+    bottom: 10px;
+    pointer-events: none;
+}
+
 .tile {
     background: var(--cell-bg);
     border-radius: 8px;
@@ -173,9 +190,10 @@ h1 {
     font-size: var(--tile-font-size);
     font-weight: bold;
     color: #776e65;
-    transition: all 0.15s ease-in-out;
     box-sizing: border-box;
-    position: relative;
+    position: absolute;
+    transition: transform 0.15s ease, left 0.15s ease, top 0.15s ease;
+    will-change: transform, left, top;
 }
 
 .tile.new {
