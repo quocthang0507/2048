@@ -47,7 +47,7 @@ body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     display: flex;
     justify-content: center;
-    padding-top: 40px;
+    align-items: center;
     background: var(--bg-color);
     color: var(--text-color);
     transition: background var(--transition-speed) ease, color var(--transition-speed) ease;
