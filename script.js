@@ -12,6 +12,12 @@ let startTime = null;
 let timerInterval = null;
 let hasWon = false;
 
+// Board sizing constants
+const VIEWPORT_PADDING = 40; // Account for container padding and margins
+const FONT_SIZE_RATIO = 0.35; // Base font size as ratio of cell size
+const LARGE_FONT_RATIO = 0.85; // Font size ratio for tiles 128-512
+const XLARGE_FONT_RATIO = 0.75; // Font size ratio for tiles 1024+
+
 // Statistics
 let stats = JSON.parse(localStorage.getItem("stats2048")) || {
     totalGames: 0,
@@ -295,12 +301,6 @@ function showHint() {
 function updateBoardSize() {
     const boardDiv = document.getElementById('board');
     
-    // Constants for sizing calculations
-    const VIEWPORT_PADDING = 40; // Account for container padding and margins
-    const FONT_SIZE_RATIO = 0.35; // Base font size as ratio of cell size
-    const LARGE_FONT_RATIO = 0.85; // Font size ratio for tiles 128-512
-    const XLARGE_FONT_RATIO = 0.75; // Font size ratio for tiles 1024+
-    
     // Calculate optimal cell size based on screen width
     const maxWidth = window.innerWidth - VIEWPORT_PADDING;
     const maxCellSize = 95;
@@ -446,7 +446,7 @@ let isSwiping = false;
 document.addEventListener('touchstart', (e) => {
     const target = e.target;
     // Only handle touch on the board
-    if (target.closest('#board') || target.classList.contains('tile')) {
+    if (target.closest('#board')) {
         touchStartX = e.touches[0].clientX;
         touchStartY = e.touches[0].clientY;
         isSwiping = true;
