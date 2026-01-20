@@ -12,6 +12,16 @@ let startTime = null;
 let timerInterval = null;
 let hasWon = false;
 
+// Board sizing constants
+const VIEWPORT_PADDING = 40; // Account for container padding and margins (synced with CSS --viewport-padding)
+const MIN_CELL_SIZE = 50; // Minimum cell size for playability on small screens
+const SMALL_CELL_THRESHOLD = 70; // Cell size threshold for using smaller gap (smaller screens need tighter layout)
+const DEFAULT_GAP = 10; // Standard gap between tiles for normal screens
+const SMALL_GAP = 8; // Reduced gap for smaller screens to maximize space
+const FONT_SIZE_RATIO = 0.35; // Base font size as 35% of cell size for optimal readability
+const LARGE_FONT_RATIO = 0.85; // Font size for tiles 128-512 (reduced to fit 3 digits)
+const XLARGE_FONT_RATIO = 0.75; // Font size for tiles 1024+ (reduced to fit 4 digits)
+
 // Statistics
 let stats = JSON.parse(localStorage.getItem("stats2048")) || {
     totalGames: 0,
@@ -30,6 +40,13 @@ updateLeaderboard();
 window.onload = function () {
     showMenu();
 };
+
+// Update board size on window resize
+window.addEventListener('resize', () => {
+    if (gameStarted) {
+        updateBoardSize();
+    }
+});
 
 document.getElementById("new-game").onclick = startGame;
 document.getElementById("restart").onclick = startGame;
@@ -287,14 +304,38 @@ function showHint() {
 /* ====== UPDATE BOARD SIZE ====== */
 function updateBoardSize() {
     const boardDiv = document.getElementById('board');
-    const cellSize = Math.min(95, Math.floor(400 / gridSize));
-    const gap = 10;
+    
+    // Calculate optimal cell size based on screen width
+    const maxWidth = window.innerWidth - VIEWPORT_PADDING;
+    const maxCellSize = 95;
+    const padding = 10;
+    
+    // Determine gap size based on available width
+    // Use smaller gap for narrower screens to fit more content
+    const estimatedCellSize = Math.floor((maxWidth - (2 * padding)) / gridSize);
+    const gap = estimatedCellSize < SMALL_CELL_THRESHOLD ? SMALL_GAP : DEFAULT_GAP;
+    
+    // Calculate cell size to fit the screen with the appropriate gap
+    const availableWidth = maxWidth - (2 * padding) - ((gridSize - 1) * gap);
+    let cellSize = Math.floor(availableWidth / gridSize);
+    
+    // Cap at maximum size for larger screens
+    cellSize = Math.min(cellSize, maxCellSize);
+    
+    // Ensure minimum size for playability
+    cellSize = Math.max(cellSize, MIN_CELL_SIZE);
     
     boardDiv.style.gridTemplateColumns = `repeat(${gridSize}, ${cellSize}px)`;
     boardDiv.style.gridTemplateRows = `repeat(${gridSize}, ${cellSize}px)`;
     boardDiv.style.gap = `${gap}px`;
     boardDiv.style.padding = `${gap}px`;
     boardDiv.style.width = 'fit-content';
+    
+    // Update tile font sizes based on cell size
+    const baseFontSize = Math.floor(cellSize * FONT_SIZE_RATIO);
+    document.documentElement.style.setProperty('--tile-font-size', `${baseFontSize}px`);
+    document.documentElement.style.setProperty('--tile-font-size-large', `${Math.floor(baseFontSize * LARGE_FONT_RATIO)}px`);
+    document.documentElement.style.setProperty('--tile-font-size-xlarge', `${Math.floor(baseFontSize * XLARGE_FONT_RATIO)}px`);
 }
 
 /* ====== RENDER BOARD ====== */
@@ -405,14 +446,30 @@ document.addEventListener("keydown", function (e) {
 /* ====== TOUCH SUPPORT ====== */
 let touchStartX = 0;
 let touchStartY = 0;
+let isSwiping = false;
 
 document.addEventListener('touchstart', (e) => {
-    touchStartX = e.touches[0].clientX;
-    touchStartY = e.touches[0].clientY;
-});
+    const target = e.target;
+    // Only handle touch on the board
+    if (target.closest('#board')) {
+        touchStartX = e.touches[0].clientX;
+        touchStartY = e.touches[0].clientY;
+        isSwiping = true;
+        e.preventDefault();
+    }
+}, { passive: false });
+
+document.addEventListener('touchmove', (e) => {
+    if (isSwiping) {
+        e.preventDefault();
+    }
+}, { passive: false });
 
 document.addEventListener('touchend', (e) => {
-    if (!gameStarted) return;
+    if (!gameStarted || !isSwiping) {
+        isSwiping = false;
+        return;
+    }
     
     const touchEndX = e.changedTouches[0].clientX;
     const touchEndY = e.changedTouches[0].clientY;
@@ -420,7 +477,7 @@ document.addEventListener('touchend', (e) => {
     const deltaX = touchEndX - touchStartX;
     const deltaY = touchEndY - touchStartY;
     
-    const minSwipe = 50;
+    const minSwipe = 30;
     let moved = false;
     
     if (Math.abs(deltaX) > Math.abs(deltaY)) {
@@ -442,6 +499,8 @@ document.addEventListener('touchend', (e) => {
         saveState();
         checkGameOver();
     }
+    
+    isSwiping = false;
 });
 
 /* ====== SLIDE LOGIC ====== */
