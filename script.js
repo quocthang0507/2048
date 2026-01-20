@@ -296,7 +296,8 @@ function updateBoardSize() {
     const boardDiv = document.getElementById('board');
     
     // Calculate optimal cell size based on screen width
-    const maxWidth = window.innerWidth - 40; // Account for padding
+    const VIEWPORT_PADDING = 40; // Account for container padding
+    const maxWidth = window.innerWidth - VIEWPORT_PADDING;
     const maxCellSize = 95;
     const gap = 10;
     const padding = 10;
@@ -472,12 +473,10 @@ document.addEventListener('touchend', (e) => {
     if (Math.abs(deltaX) > Math.abs(deltaY)) {
         if (Math.abs(deltaX) > minSwipe) {
             moved = deltaX > 0 ? moveRight() : moveLeft();
-            e.preventDefault();
         }
     } else {
         if (Math.abs(deltaY) > minSwipe) {
             moved = deltaY > 0 ? moveDown() : moveUp();
-            e.preventDefault();
         }
     }
     
