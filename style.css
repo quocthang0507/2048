@@ -152,7 +152,7 @@ h1 {
     background: var(--board-bg);
     border-radius: 10px;
     padding: 10px;
-    margin: 0 auto;
+    margin: 20px auto 0;
     box-sizing: border-box;
     width: fit-content;
     position: relative;
