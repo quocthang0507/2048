@@ -14,6 +14,29 @@
             <h2>🎮 Chào mừng đến 2048!</h2>
             
             <div class="menu-section">
+                <h3>🧩 Phiên bản</h3>
+                <div class="variant-options">
+                    <button class="variant-btn active" data-variant="classic">
+                        <span class="mode-icon">🔢</span>
+                        <span class="mode-name">Classic</span>
+                    </button>
+                    <button class="variant-btn" data-variant="fibonacci">
+                        <span class="mode-icon">🌀</span>
+                        <span class="mode-name">Fibonacci</span>
+                    </button>
+                    <button class="variant-btn" data-variant="obstacles">
+                        <span class="mode-icon">🪨</span>
+                        <span class="mode-name">Chướng ngại</span>
+                    </button>
+                    <button class="variant-btn" data-variant="joker">
+                        <span class="mode-icon">🃏</span>
+                        <span class="mode-name">Joker</span>
+                    </button>
+                </div>
+                <p id="variant-desc" class="variant-desc"></p>
+            </div>
+
+            <div class="menu-section">
                 <h3>Chọn kích thước lưới</h3>
                 <div class="grid-size-options">
                     <button class="grid-size-btn" data-size="3">3×3</button>
@@ -56,10 +79,11 @@
                 <div class="game-intro">
                     <p><strong>Cách chơi:</strong></p>
                     <ul>
-                        <li>Sử dụng phím mũi tên ⬆️ ⬇️ ⬅️ ➡️ để di chuyển</li>
-                        <li>Hai ô cùng số sẽ gộp lại khi chạm nhau</li>
-                        <li>Mục tiêu: Tạo ra ô 2048! 🎯</li>
-                        <li>Nhấn U để hoàn tác, H để gợi ý</li>
+                        <li>Sử dụng phím mũi tên ⬆️ ⬇️ ⬅️ ➡️ hoặc vuốt trên bàn cờ để di chuyển</li>
+                        <li>Hai ô gộp được (theo luật của phiên bản) sẽ gộp lại khi chạm nhau</li>
+                        <li>Mục tiêu: Tạo ra ô mục tiêu của phiên bản! 🎯</li>
+                        <li>Nhấn U để hoàn tác, H để gợi ý, Esc để đóng menu</li>
+                        <li>Time Attack: 3 phút &middot; Target Score: đạt 10000 điểm</li>
                     </ul>
                     <p><strong>💡 Mẹo:</strong> Giữ ô lớn nhất ở một góc!</p>
                 </div>
@@ -88,9 +112,11 @@
             </div>
 
             <div class="menu-section">
-                <h3>🏆 Bảng xếp hạng</h3>
+                <h3>🏆 Bảng xếp hạng · <span id="leaderboard-variant">Classic</span></h3>
                 <div id="leaderboard" class="leaderboard"></div>
             </div>
+
+            <button id="start-game" class="start-btn">▶ Bắt đầu ván mới</button>
         </div>
     </div>
 
@@ -108,6 +134,7 @@
 
     <div class="container">
         <h1>2048</h1>
+        <div id="game-info" class="game-info"></div>
 
         <div class="top-bar">
             <div class="score-board">
@@ -119,9 +146,13 @@
                     <span>Best</span>
                     <div id="best">0</div>
                 </div>
-                <div class="score-box" id="time-box" style="display: none;">
+                <div class="score-box hidden" id="time-box">
                     <span>Time</span>
-                    <div id="timer">0:00</div>
+                    <div id="timer">3:00</div>
+                </div>
+                <div class="score-box hidden" id="target-box">
+                    <span>Target</span>
+                    <div id="target-score">10000</div>
                 </div>
                 <div class="score-box" id="moves-box">
                     <span>Moves</span>
@@ -134,7 +165,7 @@
                 <button id="undo-btn" title="Hoàn tác (U)">↶</button>
                 <button id="hint-btn" title="Gợi ý (H)">💡</button>
                 <button id="sound-toggle" title="Âm thanh">🔊</button>
-                <button id="theme-toggle">🌙</button>
+                <button id="theme-toggle" title="Đổi theme">🌙</button>
                 <button id="new-game">New Game</button>
             </div>
         </div>

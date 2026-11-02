@@ -43,7 +43,12 @@ body.pastel {
     --score-bg: #d4a5a5;
 }
 
+*, *::before, *::after {
+    box-sizing: border-box;
+}
+
 body {
+    margin: 0;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     display: flex;
     justify-content: center;
@@ -199,17 +204,25 @@ h1 {
     will-change: transform, left, top;
 }
 
+/* New tiles appear after the slide finishes */
 .tile.new {
-    animation: pop 0.25s ease;
+    animation: pop 0.2s ease 0.12s backwards;
 }
 
 .tile.merge {
-    animation: merge 0.3s ease;
+    animation: merge 0.2s ease;
+    z-index: 1;
 }
 
-.tile.hint {
-    animation: pulse 1s infinite;
-    box-shadow: 0 0 20px rgba(237, 194, 46, 0.8);
+.hint-arrow {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    font-size: 64px;
+    pointer-events: none;
+    z-index: 10;
+    filter: drop-shadow(0 0 12px rgba(237, 194, 46, 0.9));
+    animation: hint 1.2s ease forwards;
 }
 
 @keyframes pop {
@@ -224,9 +237,11 @@ h1 {
     100% { transform: scale(1); }
 }
 
-@keyframes pulse {
-    0%, 100% { transform: scale(1); }
-    50% { transform: scale(1.05); }
+@keyframes hint {
+    0% { transform: translate(-50%, -50%) scale(0.5); opacity: 0; }
+    20% { transform: translate(-50%, -50%) scale(1.1); opacity: 1; }
+    80% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+    100% { transform: translate(-50%, -50%) scale(1); opacity: 0; }
 }
 
 /* ====== TILE COLORS ====== */
@@ -242,6 +257,20 @@ h1 {
 .tile-1024 { background: #edc53f; color: white; font-size: var(--tile-font-size-xlarge); }
 .tile-2048 { background: #edc22e; color: white; font-size: var(--tile-font-size-xlarge); }
 .tile-4096 { background: #3c3a32; color: white; font-size: var(--tile-font-size-xlarge); }
+/* Variant tiles */
+.tile-stone {
+    background: repeating-linear-gradient(45deg, #5d5750, #5d5750 6px, #4e4842 6px, #4e4842 12px);
+    box-shadow: inset 0 0 0 3px rgba(0, 0, 0, 0.25);
+}
+
+.tile-joker {
+    background: linear-gradient(135deg, #ff6b6b, #feca57, #48dbfb, #ff9ff3);
+    color: white;
+    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
+    font-size: calc(var(--tile-font-size) * 1.2);
+}
+
+.tile-super { background: #3c3a32; color: white; font-size: calc(var(--tile-font-size-xlarge) * 0.8); }
 
 /* ====== NEON THEME TILES ====== */
 body.neon .tile-2 { background: #00ffff; color: #0a0e27; box-shadow: 0 0 10px #00ffff; }
@@ -250,6 +279,8 @@ body.neon .tile-8 { background: #ffff00; color: #0a0e27; box-shadow: 0 0 15px #f
 body.neon .tile-16 { background: #ff00ff; color: white; box-shadow: 0 0 15px #ff00ff; }
 body.neon .tile-32 { background: #ff0088; color: white; box-shadow: 0 0 20px #ff0088; }
 body.neon .tile-64 { background: #ff0000; color: white; box-shadow: 0 0 20px #ff0000; }
+body.neon .tile-128, body.neon .tile-256, body.neon .tile-512 { box-shadow: 0 0 20px #edcf72; }
+body.neon .tile-1024, body.neon .tile-2048 { box-shadow: 0 0 25px #edc22e; }
 
 /* ====== MESSAGE ====== */
 #message {
@@ -342,14 +373,13 @@ body.neon .tile-64 { background: #ff0000; color: white; box-shadow: 0 0 20px #ff
     transition: all 0.3s ease;
 }
 
-.msg-btn.primary {
-    background: #edc22e;
-    color: white;
-}
-
 .msg-btn {
     background: var(--button-bg);
     color: white;
+}
+
+.msg-btn.primary {
+    background: #edc22e;
 }
 
 .msg-btn:hover {
@@ -429,7 +459,7 @@ body.neon .tile-64 { background: #ff0000; color: white; box-shadow: 0 0 20px #ff
     gap: 12px;
 }
 
-.grid-size-btn, .mode-btn, .theme-btn {
+.grid-size-btn, .mode-btn, .theme-btn, .variant-btn {
     padding: 15px;
     border: 3px solid transparent;
     background: var(--cell-bg);
@@ -441,13 +471,13 @@ body.neon .tile-64 { background: #ff0000; color: white; box-shadow: 0 0 20px #ff
     transition: all 0.3s ease;
 }
 
-.grid-size-btn:hover, .mode-btn:hover, .theme-btn:hover {
+.grid-size-btn:hover, .mode-btn:hover, .theme-btn:hover, .variant-btn:hover {
     background: var(--button-bg);
     transform: translateY(-3px);
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
 }
 
-.grid-size-btn.active, .mode-btn.active, .theme-btn.active {
+.grid-size-btn.active, .mode-btn.active, .theme-btn.active, .variant-btn.active {
     background: linear-gradient(135deg, #edc22e, #f7b731);
     border-color: #edc22e;
     color: #fff;
@@ -460,7 +490,27 @@ body.neon .tile-64 { background: #ff0000; color: white; box-shadow: 0 0 20px #ff
     gap: 12px;
 }
 
-.mode-btn {
+.variant-options {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+}
+
+.variant-desc {
+    margin: 15px 0 0;
+    color: var(--text-color);
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+.game-info {
+    margin: -8px 0 16px;
+    font-size: 14px;
+    font-weight: bold;
+    opacity: 0.8;
+}
+
+.mode-btn, .variant-btn {
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -539,6 +589,33 @@ body.neon .tile-64 { background: #ff0000; color: white; box-shadow: 0 0 20px #ff
     font-weight: bold;
 }
 
+.leaderboard-empty {
+    text-align: center;
+    color: var(--text-color);
+    opacity: 0.6;
+}
+
+.start-btn {
+    display: block;
+    width: 100%;
+    margin-top: 10px;
+    padding: 16px;
+    border: none;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #edc22e, #f7b731);
+    color: white;
+    font-size: 20px;
+    font-weight: bold;
+    cursor: pointer;
+    box-shadow: 0 5px 20px rgba(237, 194, 46, 0.4);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.start-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(237, 194, 46, 0.5);
+}
+
 .game-intro {
     color: var(--text-color);
     line-height: 1.8;
@@ -609,7 +686,7 @@ body.neon .tile-64 { background: #ff0000; color: white; box-shadow: 0 0 20px #ff
         max-width: calc(100vw - var(--viewport-padding));
     }
     
-    .grid-size-options {
+    .grid-size-options, .variant-options {
         grid-template-columns: repeat(2, 1fr);
     }
     
@@ -641,13 +718,6 @@ body.neon .tile-64 { background: #ff0000; color: white; box-shadow: 0 0 20px #ff
     
     .score-box div {
         font-size: 18px;
-    }
-
-    #board {
-        width: 100%;
-        max-width: 100%;
-        padding: 8px;
-        gap: 8px;
     }
 
     .buttons button {
